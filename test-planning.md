@@ -1,0 +1,72 @@
+# Angular Google Forms
+## Tests Planning
+### Request Tests
+
+- Form
+    - Index
+        - Tests
+            - Return the list of forms with the correct data?
+            - The status when the request succeeds is 200?
+    - Show
+        - Tests
+            - Return details of the correct form?
+            - The status when the request succeeds is 200?
+            - Returns 404 when the form is disabled?
+            - Returns 404 when the form does not exist?
+    - Update
+        - Tests
+            - Are the form details updated correctly?
+            - The status when the request succeeds is 200?
+            - The status is 403 when the user does not own the form?
+            - The answer is the details of the form?
+    - Create
+        - Tests
+            - Is the form created correctly?
+            - The status when the request succeeds is 200?
+            - The answer is the details of the form?
+    - Destroy
+        - Tests
+            - Is the form deleted?
+            - The status when the request succeeds is 200?
+            - The status is 403 when the user does not own the form?
+- Question
+    - Create
+        - Tests
+            - Is the question created correctly?
+            - The status when the request succeeds is 200?
+            - Was the question associated with the correct form?
+            - The answer is the details of the question?
+    - Update
+        - Tests
+            - Are the details of the question updated correctly?
+            - The status when the request succeeds is 200?
+            - Is the status 403 when the user does not own the question?
+            - The answer is the details of the question?
+    - Destroy
+        - Tests
+            - Is the question deleted?
+            - The status when the request succeeds is 200?
+            - Is the status 403 when the user does not own the question?
+- User
+    - Standard Devise
+- Answer
+    - Index
+        - Tests
+            - Return the list of answers with the correct data?
+            - The status when the request succeeds is 200?
+            - Does the status return 403 when the user does not own the answer?
+    - Show
+        - Tests
+            - Returns correct answer details?
+            - The status when the request succeeds is 200?
+            - Does the status return 403 when the user does not own the form?
+    - Create
+        - Tests
+            - Is the answer created correctly?
+            - The status when the request succeeds is 200?
+            - The answer is the details of the answer?
+    - Destroy
+        - Tests
+            - Is the answer deleted?
+            - The status when the request succeeds is 200?
+            - Is the status 403 when the user does not own the answer?
