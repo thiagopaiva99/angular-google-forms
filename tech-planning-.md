@@ -1,0 +1,125 @@
+# Angular Google Forms
+## Tech Planning
+### API Endpoints
+
+- Form
+  - Index
+    - Input
+      - Headers: User
+    - Output
+      - Form list
+  - Show
+    - Input
+      - Headers: User
+      - Params:
+        - form_id
+    - Output
+      - Form details
+      - Questions details
+  - Update
+    - Input
+      - Headers: User
+      - Params:
+        - Form_id
+        - Form params
+    - Output
+      - Status: 200
+      - Form Details
+  - Create
+    - Input
+      - Headers: User
+      - Params:
+        - Form params
+    - Output
+      - Status: 200
+      - Form Details
+  - Destroy
+    - Input
+      - Headers: User
+      - Params:
+        - Form_id
+    - Output
+      - Status: 200
+- Question
+  - Create
+    - Input
+      - Headers: User
+      - Params:
+        - form_id
+        - Question params
+    - Output
+      - Status: 200
+      - Question Details
+  - Update
+    - Input
+      - Headers: User
+      - Params:
+        - Question_id
+        - Question params
+    - Output
+      - Status: 200
+      - Question Details
+  - Destroy
+    - Input
+      - Headers: User
+      - Params:
+        - Question_id
+    - Output
+      - Status: 200
+- User
+  - Devise default
+- Answer
+  - Index
+    - Input
+      - Headers: User
+      - Params:
+        - form_id
+    - Output
+      - Answers list
+  - show
+    - Input
+      - Headers: User
+      - Params:
+        - anwser_id
+    - Output
+      - Answers details
+  - Create
+    - Input
+      - Params:
+        - Form_id
+        - Answer question params
+    - Output
+      - Answers details
+  - Destroy
+    - Input
+      - Headers: User
+      - Params:
+        - answer_id
+    - Output
+      - Status: 200
+
+### Project Stack Definition
+
+- Repository
+  - Gitlab
+- Development
+  - Ruby On Rails - API
+    - Libs
+      - Devise
+      - Devise Token Auth
+      - Rspec Rails
+      - Factory Girl Rails
+      - Ffaker
+      - Friendily_id
+  - Angular - Client
+    - Libs
+      - Angular2-Materialize
+      - Angular2-Token
+      - Ng2-charts
+      - Angular2-Color-Picker
+  - PostgreSQL
+- External Services
+  - None
+- Environment
+  - Docker
+  - Docker-compose
