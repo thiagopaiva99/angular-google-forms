@@ -1,0 +1,5 @@
+# Install Gems
+docker-compose run --rm app bundle install
+
+# Install Rspec
+docker-compose run --rm app bundle exec rails generate rspec:install
