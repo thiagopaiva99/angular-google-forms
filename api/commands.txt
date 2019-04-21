@@ -6,3 +6,6 @@ docker-compose run --rm app bundle exec rails generate rspec:install
 
 # Create database and migrations
 docker-compose run --rm app bundle exec rake db:create db:migrate
+
+# Install Devise Token Auth
+docker-compose run app bundle exec rails g devise_token_auth:install
