@@ -9,3 +9,9 @@ docker-compose run --rm app bundle exec rake db:create db:migrate
 
 # Install Devise Token Auth
 docker-compose run app bundle exec rails g devise_token_auth:install
+
+# Generate some model
+docker-compose run --rm app bundle exec rails g model MODEL_NAME MODEL_FIELD:DATA_TYPE
+
+# Generate some controller
+docker-compose run app bundle exec rails g controller CONTROLER_DIR/NAME index show update create destroy --no-controller-specs
