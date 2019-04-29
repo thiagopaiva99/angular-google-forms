@@ -1,241 +1,174 @@
 require 'rails_helper'
 
 RSpec.describe "Api::V1::Answers", type: :request do
-  describe "GET /forms" do
+  describe "GET /answers" do
     context "With Invalid authentication headers" do
-      it_behaves_like :deny_without_authorization, :get, "/api/v1/forms"
+      it_behaves_like :deny_without_authorization, :get, "/api/v1/answers"
     end
-
+ 
     context "With Valid authentication headers" do
       before do
         @user = create(:user)
-        @form1 = create(:form, user: @user)
-        @form2 = create(:form, user: @user)
-
-        get "/api/v1/forms", params: {}, headers: header_with_authentication(@user)
+        @form = create(:form, user: @user)
+        @answer1 = create(:answer, form: @form)
+        @answer2 = create(:answer, form: @form)
+ 
+        get "/api/v1/answers", params: {form_id: @form.id}, headers: header_with_authentication(@user)
       end
-
+ 
       it "returns 200" do
         expect_status(200)
       end
-
-      it "returns Form list with 2 forms" do
+ 
+      it "returns Form list with 2 answers" do
         expect(json.count).to eql(2)
       end
-
-      it "returned Forms have right datas" do
-        expect(json[0]).to eql(JSON.parse(@form1.to_json))
-        expect(json[1]).to eql(JSON.parse(@form2.to_json))
+ 
+      it "returned Answers have right datas" do
+        expect(json[0]).to eql(JSON.parse(@answer1.to_json))
+        expect(json[1]).to eql(JSON.parse(@answer2.to_json))
       end
     end
   end
 
-  describe "GET /forms/:friendly_id" do
+  describe "GET /answers/:id" do
     before do
       @user = create(:user)
+      @form = create(:form, user: @user)
     end
-
-    context "When form exists" do
-      context "And is enable" do
+ 
+    context "With Invalid authentication headers" do
+      it_behaves_like :deny_without_authorization, :get, "/api/v1/answers/0"
+    end
+ 
+    context "With valid authentication headers" do
+      context "When answer exists" do
         before do
-          @form = create(:form, user: @user, enable: true)
+          @answer = create(:answer, form: @form)
+          @questions_answers_1 = create(:questions_answer, answer: @answer)
+          @questions_answers_2 = create(:questions_answer, answer: @answer)          
+          get "/api/v1/answers/#{@answer.id}", params: {}, headers: header_with_authentication(@user)
         end
-
+ 
         it "returns 200" do
-          get "/api/v1/forms/#{@form.friendly_id}", params: {}, headers: header_with_authentication(@user)
           expect_status(200)
         end
-
-        it "returned Form with right datas" do
-          get "/api/v1/forms/#{@form.friendly_id}", params: {}, headers: header_with_authentication(@user)
-          expect(json).to eql(JSON.parse(@form.to_json))
+ 
+        it "returned Answer with right datas" do
+          expect(json.except("questions_answers")).to eql(JSON.parse(@answer.to_json))
+        end
+ 
+        it "returned associated questions_answers" do
+          expect(json['questions_answers'].first).to eql(JSON.parse(@questions_answers_1.to_json))
+          expect(json['questions_answers'].last).to  eql(JSON.parse(@questions_answers_2.to_json))
         end
       end
-
-      context "And is unable" do
-        before do
-          @form = create(:form, user: @user, enable: false)
-        end
-
+ 
+      context "When answer dont exists" do
         it "returns 404" do
-          get "/api/v1/forms/#{FFaker::Lorem.word}", params: {id: @form.friendly_id}, headers: header_with_authentication(@user)
+          get "/api/v1/answers/#{FFaker::Lorem.word}", params: {}, headers: header_with_authentication(@user)
           expect_status(404)
         end
       end
     end
-
-    context "When form dont exists" do
-      it "returns 404" do
-        get "/api/v1/forms/#{FFaker::Lorem.word}", params: {}, headers: header_with_authentication(@user)
-        expect_status(404)
-      end
-    end
   end
 
-  describe "POST /forms" do
+  describe "POST /answers" do 
     context "With Invalid authentication headers" do
-      it_behaves_like :deny_without_authorization, :post, "/api/v1/forms"
+      it_behaves_like :deny_without_authorization, :post, "/api/v1/answers"
     end
-
+ 
     context "With valid authentication headers" do
       before do
         @user = create(:user)
+        @form = create(:form, user: @user)       
+        @question = create(:question, form: @form) 
       end
-
-      context "And with valid params" do
+ 
+      context "And with valid form id" do
         before do
-          @form_attributes = attributes_for(:form)
-          post "/api/v1/forms", params: {form: @form_attributes}, headers: header_with_authentication(@user)
+          @questions_answers_1_attributes = attributes_for(:questions_answer, question_id: @question.id)  
+          @questions_answers_2_attributes = attributes_for(:questions_answer, question_id: @question.id)            
+          post "/api/v1/answers", params: {form_id: @form.id, questions_answers: [@questions_answers_1_attributes, @questions_answers_2_attributes]}, headers: header_with_authentication(@user)
         end
-
+ 
         it "returns 200" do
           expect_status(200)
         end
-
-        it "form are created with correct data" do
-          @form_attributes.each do |field|
-            expect(Form.first[field.first]).to eql(field.last)
-          end
+ 
+        it "answer are associated with correct form" do
+          expect(@form).to eql(Answer.last.form)
         end
-
-        it "Returned data is correct" do
-          @form_attributes.each do |field|
-            expect(json[field.first.to_s]).to eql(field.last)
-          end
+ 
+        it "questions answer are associated" do
+          expect(json["id"]).to eql(QuestionsAnswer.first.answer.id)
+          expect(json["id"]).to eql(QuestionsAnswer.last.answer.id)          
         end
       end
-
-      context "And with invalid params" do
+ 
+      context "And with invalid form id" do
         before do
           @other_user = create(:user)
-          post "/api/v1/forms", params: {form: {}}, headers: header_with_authentication(@user)
+          post "/api/v1/answers", params: {form_id: 0}, headers: header_with_authentication(@user)
         end
-
-        it "returns 400" do
-          expect_status(400)
-        end
-      end
-    end
-  end
-
-  describe "PUT /forms/:friendly_id" do
-    context "With Invalid authentication headers" do
-      it_behaves_like :deny_without_authorization, :put, "/api/v1/forms/questionary"
-    end
-
-    context "With valid authentication headers" do
-      before do
-        @user = create(:user)
-      end
-
-      context "When form exists" do
-        context "And user is the owner" do
-          before do
-            @form = create(:form, user: @user)
-            @form_attributes = attributes_for(:form, id: @form.id)
-            put "/api/v1/forms/#{@form.friendly_id}", params: {form: @form_attributes}, headers: header_with_authentication(@user)
-          end
-
-          it "returns 200" do
-            expect_status(200)
-          end
-
-          it "form are updated with correct data" do
-            @form.reload
-            @form_attributes.each do |field|
-              expect(@form[field.first]).to eql(field.last)
-            end
-          end
-
-          it "Returned data is correct" do
-            @form_attributes.each do |field|
-              expect(json[field.first.to_s]).to eql(field.last)
-            end
-          end
-        end
-
-        context "And user is not the owner" do
-          before do
-            @form = create(:form)
-            @form_attributes = attributes_for(:form, id: @form.id)
-            put "/api/v1/forms/#{@form.friendly_id}", params: {form: @form_attributes}, headers: header_with_authentication(@user)
-          end
-
-          it "returns 403" do
-            expect_status(403)
-          end
-        end
-      end
-
-      context "When form dont exists" do
-        before do
-          @form_attributes = attributes_for(:form)
-        end
-
+ 
         it "returns 404" do
-          delete "/api/v1/forms/#{FFaker::Lorem.word}", params: {form: @form_attributes}, headers: header_with_authentication(@user)
           expect_status(404)
         end
       end
     end
   end
 
-  describe "PUT /forms/:friendly_id" do
-    context "With Invalid authentication headers" do
-      it_behaves_like :deny_without_authorization, :put, "/api/v1/forms/questionary"
+  describe "DELETE /answers/:id" do
+    before do
+      @user = create(:user)
+      @form = create(:form, user: @user)     
     end
-
+ 
+    context "With Invalid authentication headers" do
+      it_behaves_like :deny_without_authorization, :delete, "/api/v1/answers/questionary"
+    end 
+ 
     context "With valid authentication headers" do
-      before do
-        @user = create(:user)
-      end
-
-      context "When form exists" do
+ 
+      context "When answer exists" do
+ 
         context "And user is the owner" do
           before do
-            @form = create(:form, user: @user)
-            @form_attributes = attributes_for(:form, id: @form.id)
-            put "/api/v1/forms/#{@form.friendly_id}", params: {form: @form_attributes}, headers: header_with_authentication(@user)
+            @answer = create(:answer, form: @form)
+            @questions_answers = create(:questions_answer, answer: @answer)
+            
+            delete "/api/v1/answers/#{@answer.id}", params: {}, headers: header_with_authentication(@user)
           end
-
+ 
           it "returns 200" do
             expect_status(200)
           end
-
-          it "form are updated with correct data" do
-            @form.reload
-            @form_attributes.each do |field|
-              expect(@form[field.first]).to eql(field.last)
-            end
+ 
+          it "answer are deleted" do
+            expect(Answer.all.count).to eql(0)
           end
-
-          it "Returned data is correct" do
-            @form_attributes.each do |field|
-              expect(json[field.first.to_s]).to eql(field.last)
-            end
+ 
+          it "associated questions answers are deleted" do
+            expect(QuestionsAnswer.all.count).to eql(0)
           end
         end
-
+ 
         context "And user is not the owner" do
           before do
-            @form = create(:form)
-            @form_attributes = attributes_for(:form, id: @form.id)
-            put "/api/v1/forms/#{@form.friendly_id}", params: {form: @form_attributes}, headers: header_with_authentication(@user)
+            @answer = create(:answer)
+            delete "/api/v1/answers/#{@answer.id}", params: {}, headers: header_with_authentication(@user)
           end
-
+ 
           it "returns 403" do
             expect_status(403)
           end
         end
       end
-
-      context "When form dont exists" do
-        before do
-          @form_attributes = attributes_for(:form)
-        end
-
+ 
+      context "When answer dont exists" do
         it "returns 404" do
-          delete "/api/v1/forms/#{FFaker::Lorem.word}", params: {form: @form_attributes}, headers: header_with_authentication(@user)
+          delete "/api/v1/answers/#{FFaker::Lorem.word}", params: {}, headers: header_with_authentication(@user)
           expect_status(404)
         end
       end
