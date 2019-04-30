@@ -1,9 +1,11 @@
 FactoryBot.define do
-  factory :form do
-    title { FFaker::Lorem.word }
-    description { FFaker::Lorem.phrase }
-    user
-    primary_color { "##{FFaker::Color.hex_code}" }
-    enable { FFaker::Boolean.maybe }
+  timestamp = FFaker::Time.between Date.today, Date.yesterday - 30
+
+  factory :user do
+    uid          { FFaker::Lorem.word }
+    email        { FFaker::Internet.email }
+    name         { FFaker::Name.name }
+    nickname     { FFaker::Internet.user_name }
+    password     { FFaker::Internet.password }
   end
 end
